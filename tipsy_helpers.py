@@ -56,7 +56,7 @@ async def check_if_any_people_in_view(camera, vision):
                 # because we know that there is at least one person in view,
                 # we can stop looping thru the detections early 
 
-async def pause_for_a_moment():
+async def pause_to_serve_drinks():
     # Pause for half a minute to allow people to grab a beer
     sleep(30)
 
@@ -106,9 +106,7 @@ async def turn_towards_center_of_person(base, d, frame):
 
     await base.spin(velocity=100, angle=amount_to_turn)
 
-# extra credit: 
-# call this function if Tipsy is has run into an object and is starting to tip
-# backwards
+
 async def take_a_step_back(base):
     # move backward briskly if Tipsy is falling backwards,
     # like taking a quick step back when when pushed backwards
@@ -117,5 +115,32 @@ async def take_a_step_back(base):
     await base.move_straight(velocity=1400, distance=-100)
 
 
-# TODO: look at their instagram's tipsy 
 
+# NOTE: EXTRA CREDIT: 
+# Question:
+#       How might you deal with Tipsy running into an object and starting to 
+#       tip backwards (perhaps if the object was not in the field of detection 
+#       for the ultrasonic sensor)?
+# 
+# My answer:
+# 
+# We could call my take_a_step_back function (or one very similar with 
+# different velocity and distance) if Tipsy is has run into an object and 
+# is starting to tip backwards.
+# 
+# That still leaves the question of "how would tipsy know its run 
+# into something and is now tipping backward?"
+# 
+# I see that viam has this class:
+# https://python.viam.dev/autoapi/viam/components/movement_sensor/index.html#viam.components.movement_sensor.Orientation
+# on the movement_sensor component! If this robot had a movement sensor, I would think we could use that class
+# to:
+#   get the z_axis orientation
+#   wait a few seconds
+#   get the z_axis orientation again
+#   if it has changed such that it seems to be tipping backward, 
+#   then call take_a_step_back
+# still, I am not sure the best way to monitor for that kind of change.
+# we would want to be checking that orientation data quickly enough and frequently enough 
+# that it would actually be useful, and yet also not make it so frequent that the computation
+# tax is not worth it.

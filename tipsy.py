@@ -13,7 +13,7 @@ from tipsy_helpers import \
     check_if_any_people_in_view, \
     turn_towards_center_of_person, \
     move_forward_safely, \
-    pause_for_a_moment, \
+    pause_to_serve_drinks, \
     turn_a_little_to_the_right, \
     move_forward_safely_for_specified_distance
 
@@ -50,30 +50,30 @@ async def main():
     # Start control loop wherein we will look for objects, and move accordingly
     for i in range(N):
 
-        swivel_arbitrary_amount(rover_base)
-        person_found = check_if_any_people_in_view(camera, vision)
+        await swivel_arbitrary_amount(rover_base)
+        person_found = await check_if_any_people_in_view(camera, vision)
              
         if person_found:
             d, image = person_found
-            turn_towards_center_of_person(rover_base, d, image)
-            move_forward_safely(rover_base, ultrasonic_sensor)
+            await turn_towards_center_of_person(rover_base, d, image)
+            await move_forward_safely(rover_base, ultrasonic_sensor)
             print("Any nearby people: feel free to grab a drink!")
-            pause_for_a_moment()
+            await pause_to_serve_drinks()
         else:
             print("No thirsty people in this direction!")
             print("I'll check around a bit here before I spin again!")
-            search_attempt_counter = 0
-            while search_attempt_counter < 4:
+            local_search_attempt_counter = 0
+            while local_search_attempt_counter < 4:
                 turn_a_little_to_the_right()
                 person_found = check_if_any_people_in_view(camera, vision)
                 if person_found:
                     d, image = person_found
-                    turn_towards_center_of_person(rover_base, d, image)
-                    move_forward_safely(rover_base, ultrasonic_sensor)
+                    await turn_towards_center_of_person(rover_base, d, image)
+                    await move_forward_safely(rover_base, ultrasonic_sensor)
                     print("Any nearby people: feel free to grab a drink!")
-                    pause_for_a_moment()
+                    await pause_to_serve_drinks()
                 else:
-                    search_attempt_counter+=1
+                    local_search_attempt_counter+=1
 
         if (i+1) % 10 == 0: 
             ultrasonic_sensor_result = await ultrasonic_sensor.get_readings()
