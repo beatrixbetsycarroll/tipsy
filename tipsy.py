@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from viam.robot.client import RobotClient
 from viam.rpc.dial import Credentials, DialOptions
@@ -17,16 +18,30 @@ from tipsy_helpers import \
     turn_a_little_to_the_right, \
     move_forward_safely_for_specified_distance
 
+# These must be set, you can get them from your robot's 'CODE SAMPLE' tab
+robot_secret = os.getenv('ROBOT_SECRET') or ''
+robot_address = os.getenv('ROBOT_ADDRESS') or ''
 
 async def connect():
     creds = Credentials(
         type='robot-location-secret',
-        payload='593swwv9gedfr8xbwf6n9qkyzorqv8ryu7fl9o47r8iudx5q')
+        payload=robot_secret)
     opts = RobotClient.Options(
         refresh_interval=0,
         dial_options=DialOptions(credentials=creds)
     )
-    return await RobotClient.at_address('empty-pine-main.ot97v3aaze.viam.cloud', opts)
+    return await RobotClient.at_address(robot_address, opts)
+
+
+async def connect():
+    creds = Credentials(
+        type='robot-location-secret',
+        payload=robot_secret)
+    opts = RobotClient.Options(
+        refresh_interval=0,
+        dial_options=DialOptions(credentials=creds)
+    )
+    return await RobotClient.at_address(robot_address, opts)
 
 
 async def main():
