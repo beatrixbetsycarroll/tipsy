@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, shuffle
 from time import sleep
 
 
@@ -45,6 +45,12 @@ async def check_if_any_people_in_view(camera, vision):
     image = await camera.get_image()
     detections = await vision.get_detections(image, "person_detector")
     person_found = False
+    detections.shuffle()
+    # I shuffle the list of detections because I am not sure if the list that get_detections 
+    # returns is more likely to be somewhatsorted in a 
+    # certain order (maybe by something like left to right, which would be most problematic 
+    # for my purposes), and I want to emulate a fair waitor who goes to 
+    # different people randomly, not just the person in the middle, for instance.
     for d in detections:
         if d.confidence > 0.8:
             print(d)
