@@ -15,6 +15,7 @@ from tipsy_helpers import \
     move_forward_safely, \
     pause_for_a_moment, \
     turn_a_little_to_the_right, \
+    move_forward_safely_for_specified_distance
 
 
 async def connect():
@@ -74,6 +75,20 @@ async def main():
                 else:
                     search_attempt_counter+=1
 
+        if (i+1) % 10 == 0: 
+            ultrasonic_sensor_result = await ultrasonic_sensor.get_readings()
+            distance = ultrasonic_sensor_result["distance"]
+            if distance > 10:
+                distance = 10
+            if distance > 3:
+                distance = distance - 1
+                move_forward_safely_for_specified_distance(rover_base, distance)
+                    
+        # the above if is meant to convey:
+            # every so often, make the rover just safely move away from where it is
+            # (checking that it won't hit anything),
+            # just to inject some randomness so the robot is less likely to get stuck near 
+            # the same cluster of people 
 
     await asyncio.sleep(5)
     await robot.close()

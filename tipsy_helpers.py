@@ -29,6 +29,15 @@ async def move_forward_safely(base, sensor):
     # maybe use velocity info to try to make it so it does not stop 
     # but is still almost perfectly "safe", if poss
 
+async def move_forward_safely_for_specified_distance(base, sensor, desired_distance):
+    remaining_distance = desired_distance
+
+    coast_is_clear = make_sure_nothing_too_close(sensor)
+    while coast_is_clear and (remaining_distance > 0):
+        await base.move_straight(velocity=500, distance=500)
+        remaining_distance -= 500 
+        coast_is_clear = make_sure_nothing_too_close(sensor)
+
 async def turn_a_little_to_the_right(base):
     await base.spin(velocity=100, angle=15)
 
