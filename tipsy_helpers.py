@@ -1,7 +1,12 @@
+import asyncio
 from random import randint, shuffle
 from time import sleep
 
+# desired latency in seconds
+REFLEX_LATENCY = 0.1
 
+# in millimeters/seconds
+VELOCITY_IN_MMS = 500
 
 async def swivel_arbitrary_amount(base):
     # randomly choose an amount to turn. 
@@ -38,6 +43,36 @@ async def move_forward_safely_for_specified_distance(base, sensor, desired_dista
         remaining_distance -= 500 
         coast_is_clear = make_sure_nothing_too_close(sensor)
 
+# NOTE: BELOW IS AN UPDATED WAY I WOULD DO A 'MOVE FORWARD' METHOD NEXT TIME, 
+# as per our email convo. Some notes on it:
+# used asyncio to create a task, and then used a loop that continues while task 
+# is not done, and quickly repeatedly checks that nothing is too close.
+# also took out the 'await' on 'move_straight' so that this check is happening without
+# waiting.
+# the sleep 100 milliseconds,
+# so I can run this loop frequently enough that collisions are better avoided, but not 
+# quickly that its computationally unnecessary as a lil lag between checks is prob good
+# enough.
+# however the safest thing (collision wise) would be no sleep at all but that might be a 
+# lot computationally. 
+# in fact, to account for diff robots specifications/abilities, it could be nice to make 
+# them globals. So I did that and used the globals here instead.
+# could also change the method that makes sure nothing is to close, to have a way smaller 
+# distance now, as this way makes the robot reflexive / reactive (and smooth instead of 
+# stopping and then just not starting)
+def move_forward_safely_for_specified_distance(base, sensor, desired_distance_in_m):
+    desired_distance_in_mm = desired_distance_in_m/1000
+    task = asyncio.create_task(base.move_straight(velocity=VELOCITY_IN_MMS, distance=desired_distance_in_mm))
+    while not task.done():
+        if not make_sure_nothing_too_close(sensor):
+            task.cancel()
+            # I'm not sure if task.cancel() is enough to stop the rover from moving if its 
+            # already moving 
+            # (as opposed to just cancel the instruction to move) so I am also adding base.stop()
+            base.stop()
+            break        
+        sleep(REFLEX_LATENCY)
+
 async def turn_a_little_to_the_right(base):
     await base.spin(velocity=100, angle=15)
 
@@ -47,7 +82,7 @@ async def check_if_any_people_in_view(camera, vision):
     person_found = False
     detections.shuffle()
     # I shuffle the list of detections because I am not sure if the list that get_detections 
-    # returns is more likely to be somewhatsorted in a 
+    # returns is more likely to be somewhat sorted in a 
     # certain order (maybe by something like left to right, which would be most problematic 
     # for my purposes), and I want to emulate a fair waitor who goes to 
     # different people randomly, not just the person in the middle, for instance.
@@ -150,3 +185,21 @@ async def take_a_step_back(base):
 # we would want to be checking that orientation data quickly enough and frequently enough 
 # that it would actually be useful, and yet also not make it so frequent that the computation
 # tax is not worth it.
+
+
+
+
+task = asyncio.create_task(base.move_straight(total_distance_to_target, speed))
+while not task.done():
+	if not make_sure_nothing_too_close(sensor):
+		task.cancel()
+		break
+	
+	sleep(0.1)
+        
+
+
+
+
+
+    
